@@ -24,10 +24,10 @@ public:
 
 	void printDateTime();
 
-	DateTime& operator ++(); // i++
-	DateTime& operator --(); // i--
-	DateTime operator ++(int); // ++i
-	DateTime operator --(int); // --i
+	DateTime& operator ++(); // ++i najprv zvysi a potom vrati na vypocet
+	DateTime& operator --(); // --i
+	DateTime operator ++(int); // i++ najprv vrati na vypocet a potom zvysi
+	DateTime operator --(int); // i--
 	DateTime operator +(int addSeconds);
 	DateTime operator -(int subtractSeconds);
 	bool operator ==(const DateTime& dateTime); // dateTime == this->dateTime
@@ -113,11 +113,11 @@ void DateTime::printDateTime()
 	std::cout << day << "." << month << "." << year << " " << hours << ":" << minutes << ":" << seconds << std::endl;
 }
 
-DateTime& DateTime::operator++()
+DateTime& DateTime::operator++() // ++i
 {
 	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-	seconds += 1;
+	seconds++;
 
 	if (seconds == 60)
 	{
@@ -128,32 +128,217 @@ DateTime& DateTime::operator++()
 		{
 			minutes = 0;
 			hours++;
+
+			if (hours == 24)
+			{
+				hours = 0;
+				day++;
+
+				if (day == daysInMonth[month - 1] + 1)
+				{
+					day = 1;
+					month++;
+
+					if (month == 13)
+					{
+						month = 1;
+						year++;
+					}
+				}
+			}
 		}
 	}
+
+	return *this;
 }
 
 DateTime& DateTime::operator--()
 {
-	// TODO: insert return statement here
+	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+	seconds--;
+
+	if (seconds == -1)
+	{
+		seconds = 59;
+		minutes--;
+
+		if (minutes == -1)
+		{
+			minutes = 59;
+			hours--;
+
+			if (hours == -1)
+			{
+				hours = 23;
+				day--;
+
+				if (day == 0)
+				{
+					if (month == 1) // ak by bol mesiac = 1 -> januar, tak sa zmeni den na 31, mesiac na 12 -> decemebr a znizi sa 1 rok
+					{
+						day = 31;
+						month = 12;
+						year--;
+					}
+					else
+					{
+						day = daysInMonth[month - 2];
+						month--;
+					}
+				}
+			}
+		}
+	}
+
+	return *this;
 }
 
 DateTime DateTime::operator++(int)
 {
-	return DateTime();
+	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	int oldSeconds = seconds, oldMinutes = minutes, oldHours = hours, oldDay = day, oldMonth = month, oldYear = year;
+
+	seconds++;
+
+	if (seconds == 60)
+	{
+		seconds = 0;
+		minutes++;
+
+		if (minutes == 60)
+		{
+			minutes = 0;
+			hours++;
+
+			if (hours == 24)
+			{
+				hours = 0;
+				day++;
+
+				if (day == daysInMonth[month - 1] + 1)
+				{
+					day = 1;
+					month++;
+
+					if (month == 13)
+					{
+						month = 1;
+						year++;
+					}
+				}
+			}
+		}
+	}
+	
+	return DateTime(oldYear, oldMonth, oldDay, oldHours, oldMinutes, oldSeconds);
 }
 
 DateTime DateTime::operator--(int)
 {
-	return DateTime();
+	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	int oldSeconds = seconds, oldMinutes = minutes, oldHours = hours, oldDay = day, oldMonth = month, oldYear = year;
+	
+	seconds--;
+
+	if (seconds == -1)
+	{
+		seconds = 59;
+		minutes--;
+
+		if (minutes == -1)
+		{
+			minutes = 59;
+			hours--;
+
+			if (hours == -1)
+			{
+				hours = 23;
+				day--;
+
+				if (day == 0)
+				{
+					if (month == 1) // ak by bol mesiac = 1 -> januar, tak sa zmeni den na 31, mesiac na 12 -> decemebr a znizi sa 1 rok
+					{
+						day = 31;
+						month = 12;
+						year--;
+					}
+					else
+					{
+						day = daysInMonth[month - 2];
+						month--;
+					}
+				}
+			}
+		}
+	}
+	
+	return DateTime(oldYear, oldMonth, oldDay, oldHours, oldMinutes, oldSeconds);
 }
 
 DateTime DateTime::operator+(int addSeconds)
 {
+	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+	seconds += addSeconds;
+
+	if (seconds >= 60)
+	{
+		minutes += seconds / 60;
+		seconds = seconds % 60;
+
+		if (minutes >= 60)
+		{
+			hours += minutes / 60;
+			minutes = minutes % 60;
+
+			if (hours >= 24)
+			{
+				day += hours / 24;
+				hours = hours % 24;
+
+				if (day > daysInMonth[month - 1])
+				{
+					while (day / daysInMonth[month - 1] != 0)
+					{
+						day -= daysInMonth[month - 1];
+						month++;
+
+						if (month > 12)
+						{
+							month = 1;
+							year++;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	return DateTime();
 }
 
 DateTime DateTime::operator-(int subtractSeconds)
 {
+	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+	seconds -= subtractSeconds; // < sec -> v pohode, == sec -> v pohode, > sec -> odcitavame z minut
+	//12:45:43 - 647 sec
+	if (seconds < 0)
+	{
+		minutes -= subtractSeconds / 60;
+		seconds = 60 + (seconds * 60);
+
+		if (minutes < 0)
+		{
+			hours += minutes / 60;
+			minutes = 60 + (minutes % 60);
+		}
+	}
+	
+	
+	
 	return DateTime();
 }
 
