@@ -334,6 +334,18 @@ DateTime DateTime::operator-(int subtractSeconds)
 		{
 			hours += minutes / 60;
 			minutes = 60 + (minutes % 60);
+
+			if (hours < 0)
+			{
+				day += hours / 24;
+				hours = 24 + (hours % 24);
+
+				if (day < 0)
+				{
+
+				}
+
+			}
 		}
 	}
 	
