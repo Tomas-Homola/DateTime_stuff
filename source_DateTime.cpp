@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 class DateTime
@@ -22,19 +23,21 @@ public:
 	int getMonth() { return month; }
 	int getYear() { return year; }
 
+	void addDay() { day += 1; }
+
 	void printDateTime();
 
 	DateTime& operator ++(); // ++i najprv zvysi a potom vrati na vypocet
 	DateTime& operator --(); // --i
 	DateTime operator ++(int); // i++ najprv vrati na vypocet a potom zvysi
 	DateTime operator --(int); // i--
-	DateTime operator +(int addSeconds);
-	DateTime operator -(int subtractSeconds);
+	DateTime operator +(int addSeconds); // + "n" sekund
+	DateTime operator -(int subtractSeconds); // - "n" sekund
 	bool operator ==(const DateTime& dateTime); // dateTime == this->dateTime
 	bool operator !=(const DateTime& dateTime); // dateTime != this->dateTime
 	bool operator >(const DateTime& dateTime);
 	bool operator <(const DateTime& dateTime);
-	friend std::istream& operator <<(std::istream& input, DateTime& dateTime);
+	friend std::ostream& operator <<(std::ostream& output, const DateTime& dateTime);
 	int operator [](int index);
 	int operator -(const DateTime& dateTime);
 
@@ -110,7 +113,7 @@ DateTime::DateTime(std::string dateTime, std::string delimiterDate, std::string 
 
 void DateTime::printDateTime()
 {
-	std::cout << day << "." << month << "." << year << " " << hours << ":" << minutes << ":" << seconds << std::endl;
+	std::cout << std::setfill('0') << std::setw(2) << day << "." << std::setfill('0') << std::setw(2) << month << "." << year << " " << std::setfill('0') << std::setw(2) << hours << ":" << std::setfill('0') << std::setw(2) << minutes << ":" << std::setfill('0') << std::setw(2) << seconds << std::endl;
 }
 
 DateTime& DateTime::operator++() // ++i
@@ -315,8 +318,8 @@ DateTime DateTime::operator+(int addSeconds)
 			}
 		}
 	}
-	
-	return DateTime();
+
+	return DateTime(year, month, day, hours, minutes, seconds);
 }
 
 DateTime DateTime::operator-(int subtractSeconds)
@@ -324,7 +327,6 @@ DateTime DateTime::operator-(int subtractSeconds)
 	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 	seconds -= subtractSeconds; // < sec -> v pohode, == sec -> v pohode, > sec -> odcitavame z minut
-	//12:45:43 - 647 sec
 	if (seconds < 0)
 	{
 		minutes += subtractSeconds / 60; // pripocitavane "zaporne" sekundy, cize odpocitavame
@@ -340,64 +342,233 @@ DateTime DateTime::operator-(int subtractSeconds)
 				day += hours / 24;
 				hours = 24 + (hours % 24);
 
-				if (day < 0)
+				if (day < 1)
 				{
+					do // toto este dorobit
+					{
+						if (month == 1)
+						{
+							day += daysInMonth[11];
+							month = 12;
+							year--;
+						}
+						else
+						{
+							day += daysInMonth[month - 2];
+							month--;
+						}
 
+					} while (day / daysInMonth[month - 1] != 0);
 				}
 
 			}
 		}
 	}
-	
-	
-	
-	return DateTime();
+
+	return DateTime(year, month, day, hours, minutes, seconds);
 }
 
 bool DateTime::operator==(const DateTime& dateTime)
 {
-	return false;
+	if (year == dateTime.year && month == dateTime.month && day == dateTime.day && hours == dateTime.hours && minutes == dateTime.minutes && seconds == dateTime.seconds)
+		return true;
+	else
+		return false;
 }
 
 bool DateTime::operator!=(const DateTime& dateTime)
 {
-	return false;
+	if (year == dateTime.year && month == dateTime.month && day == dateTime.day && hours == dateTime.hours && minutes == dateTime.minutes && seconds == dateTime.seconds)
+		return false;
+	else
+		return true;
 }
 
 bool DateTime::operator>(const DateTime& dateTime)
 {
-	return false;
+	if (year > dateTime.year)
+	{
+		return true;
+	}
+	else if (year < dateTime.year)
+	{
+		return false;
+	}
+	else
+	{
+		if (month > dateTime.month)
+		{
+			return true;
+		}
+		else if (month < dateTime.month)
+		{
+			return false;
+		}
+		else
+		{
+			if (day > dateTime.day)
+			{
+				return true;
+			}
+			else if (day < dateTime.day)
+			{
+				return false;
+			}
+			else
+			{
+				if (hours > dateTime.hours)
+				{
+					return true;
+				}
+				else if (hours < dateTime.hours)
+				{
+					return false;
+				}
+				else
+				{
+					if (minutes > dateTime.minutes)
+					{
+						return true;
+					}
+					else if (minutes < dateTime.minutes)
+					{
+						return false;
+					}
+					else
+					{
+						if (seconds > dateTime.seconds)
+						{
+							return true;
+						}
+						else if (seconds < dateTime.seconds)
+						{
+							return false;
+						}
+						else if (seconds == dateTime.seconds)
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 bool DateTime::operator<(const DateTime& dateTime)
 {
-	return false;
+	if (year > dateTime.year)
+	{
+		return false;
+	}
+	else if (year < dateTime.year)
+	{
+		return true;
+	}
+	else
+	{
+		if (month > dateTime.month)
+		{
+			return false;
+		}
+		else if (month < dateTime.month)
+		{
+			return true;
+		}
+		else
+		{
+			if (day > dateTime.day)
+			{
+				return false;
+			}
+			else if (day < dateTime.day)
+			{
+				return true;
+			}
+			else
+			{
+				if (hours > dateTime.hours)
+				{
+					return false;
+				}
+				else if (hours < dateTime.hours)
+				{
+					return true;
+				}
+				else
+				{
+					if (minutes > dateTime.minutes)
+					{
+						return false;
+					}
+					else if (minutes < dateTime.minutes)
+					{
+						return true;
+					}
+					else
+					{
+						if (seconds > dateTime.seconds)
+						{
+							return false;
+						}
+						else if (seconds < dateTime.seconds)
+						{
+							return true;
+						}
+						else if (seconds == dateTime.seconds)
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 int DateTime::operator[](int index)
 {
-	return 0;
+	if (index == 0)
+		return seconds;
+	else if (index == 1)
+		return minutes;
+	else if (index == 2)
+		return hours;
+	else if (index == 3)
+		return day;
+	else if (index == 4)
+		return month;
+	else if (index == 5)
+		return year;
+	else
+		return -1; // ked sa zada chybny index, vrati -1
 }
 
 int DateTime::operator-(const DateTime& dateTime)
 {
-	return 0;
+	int diffSeconds = 0;
+
+
+	return diffSeconds;
+}
+
+std::ostream& operator<<(std::ostream& output, const DateTime& dateTime)
+{
+	output << std::setfill('0') << std::setw(2) << dateTime.day << "." << std::setfill('0') << std::setw(2) << dateTime.month << "." << dateTime.year << " " << std::setfill('0') << std::setw(2) << dateTime.hours << ":" << std::setfill('0') << std::setw(2) << dateTime.minutes << ":" << std::setfill('0') << std::setw(2) << dateTime.seconds << std::endl;
+	
+	return output;
 }
 
 int main()
 {
-	DateTime datum1(2020, 10, 24, 14, 55, 23);
-	datum1.printDateTime();
+	DateTime d1(2020, 10, 27, 20, 52, 23);
+	DateTime d2(1870, 11, 28, 21, 38, 56);
 
-	DateTime datum2("24.10.2020 14:55:23", ".", " ", ":");
-	datum2.printDateTime();
+	std::cout << "Rozdiel d1 - d2 (d1 > d2): " << d1 - d2 << std::endl;
 
-
+	std::cout << "Rozdiel d2 - d1 (d1 > d2): " << d2 - d1 << std::endl;
 
 	return 0;
 }
 
-std::istream& operator<<(std::istream& input, DateTime& dateTime)
-{
-	// TODO: insert return statement here
-}
+
