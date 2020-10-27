@@ -327,8 +327,8 @@ DateTime DateTime::operator-(int subtractSeconds)
 	//12:45:43 - 647 sec
 	if (seconds < 0)
 	{
-		minutes -= subtractSeconds / 60;
-		seconds = 60 + (seconds * 60);
+		minutes += subtractSeconds / 60; // pripocitavane "zaporne" sekundy, cize odpocitavame
+		seconds = 60 + (seconds % 60);
 
 		if (minutes < 0)
 		{
