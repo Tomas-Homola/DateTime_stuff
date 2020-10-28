@@ -547,23 +547,22 @@ int DateTime::operator[](int index)
 int DateTime::operator-(const DateTime& dateTime)
 {
 	int daysInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-	int diffSeconds = 3, diffYears = 0, diffMonths = 0, diffDays = 0;
+	int diffSeconds = 0, diffYears = 0, diffMonths = 0, diffDays = 0, diffHours = 0, diffMinutes = 0;
 	DateTime tempDT(dateTime.year, dateTime.month, dateTime.day, dateTime.hours, dateTime.minutes, dateTime.seconds); // kind of kopia toho, co je ako referencia v argumente funkcie, aby sa dali menit hodnoty, kedze argument je ako const
 
-	if (*this == tempDT)
+	if (*this == tempDT) // (*this == dateTime)
 		return 0;
 
 	if (year > tempDT.year)
 	{	
-		year++;
-
 		diffYears = year - tempDT.year;
 		diffMonths = month - tempDT.month;
-
+		
 		if (diffMonths < 0)
 			diffYears--;
-
-		diffDays += (daysInMonth[tempDT.month - 1] - tempDT.day);
+		
+		diffDays += (daysInMonth[tempDT.month - 1] - tempDT.day) + 1;
+		tempDT.day = 1;
 		tempDT.month++;
 		if (tempDT.month == 13) // zmena mesiaca na januar
 			tempDT.month = 1;
@@ -575,7 +574,6 @@ int DateTime::operator-(const DateTime& dateTime)
 		};
 
 		diffDays += day;
-
 	}
 	else if (year < dateTime.year)
 	{
@@ -586,9 +584,9 @@ int DateTime::operator-(const DateTime& dateTime)
 
 	}
 
+	diffDays += (diffYears * 365);
 
-
-	return diffSeconds;
+	return diffDays;
 }
 
 std::ostream& operator<<(std::ostream& output, const DateTime& dateTime)
@@ -601,11 +599,9 @@ std::ostream& operator<<(std::ostream& output, const DateTime& dateTime)
 int main()
 {
 	DateTime d1(2020, 10, 27, 20, 52, 23);
-	DateTime d2(2020, 10, 27, 20, 52, 23);
+	DateTime d2(2017, 12, 28, 21, 54, 56);
 
-	std::cout << "Rozdiel d1 - d2 (d1 > d2): " << d1 - d2 << std::endl;
-
-	std::cout << "Rozdiel d2 - d1 (d1 > d2): " << d2 - d1 << std::endl;
+	std::cout << "Rozdiel v dnoch d1 - d2 (d1 > d2): " << d1 - d2 << std::endl;
 
 	return 0;
 }
